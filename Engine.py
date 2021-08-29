@@ -8,13 +8,18 @@ highest = -999999
 #Method to see if a piece is hanging (it can be captured but is not protected by one of its own pieces).
 def isHanging(b, x, y, opponentMoves, color):
     position = Chess.convertFilesRanks(x,y)
+    piece = b.get(x,y)
     if position in opponentMoves:
         arr = [[0 for x in range(12)] for y in range(12)]
-        tempBoard = Board(arr)
-        tempBoard.set(x, y, Chess.freeSpace)
-        legalMoves = Chess.getAllMoves(tempBoard, color, False)
+        if color == "WHITE":
+           b.set(x, y, Chess.bPawn)
+        else:
+            b.set(x, y, Chess.wPawn)
+        legalMoves = Chess.getAllMoves(b, color, False)
         if not (position in legalMoves):
+            b.set(x, y, piece)
             return True
+    b.set(x, y, piece)        
     return False
 
 #Method that will assign a numerical value to any board position without searching different move variations. 
@@ -35,54 +40,54 @@ def staticEvaluationFunction(b, turn):
     for x in range(2,10):
         for y in range(2,10):
             if b.get(x,y) == Chess.wQueen:
-                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE")and hangingPiece):
-                    whiteEvaluation = whiteEvaluation - 100
-                    hangingPiece = False
                 whiteEvaluation = whiteEvaluation + 900
-                if (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
+                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE")and hangingPiece):
+                    whiteEvaluation = whiteEvaluation - 450
+                    hangingPiece = False
+                elif (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
                     whiteEvaluation = whiteEvaluation - 40
                     hangingPiece = False
                 elif (turn == "BLACK" and b.get(x - 1,y - 1) == Chess.bPawn):
                     whiteEvaluation = whiteEvaluation - 40
             elif b.get(x,y) == Chess.wRook:
+                whiteEvaluation = whiteEvaluation + 250
                 if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE") and hangingPiece):
-                    whiteEvaluation = whiteEvaluation - 75
+                    whiteEvaluation = whiteEvaluation - 470
                     hangingPiece = False
-                whiteEvaluation = whiteEvaluation + 500
-                if (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
+                elif (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
                     whiteEvaluation = whiteEvaluation - 30
                 elif (turn == "BLACK" and b.get(x - 1,y - 1) == Chess.bPawn):
-                        whiteEvaluation = whiteEvaluation - 30
+                    whiteEvaluation = whiteEvaluation - 30
             elif b.get(x,y) == Chess.wBishop:
-                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE") and hangingPiece):
-                    whiteEvaluation = whiteEvaluation - 50
-                    hangingPiece = False
                 whiteEvaluation = whiteEvaluation + 310
-                if (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
+                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE") and hangingPiece):
+                    whiteEvaluation = whiteEvaluation - 155
+                    hangingPiece = False
+                elif (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
                     whiteEvaluation = whiteEvaluation - 20
                     hangingPiece = False
                 elif (turn == "BLACK" and b.get(x - 1,y - 1) == Chess.bPawn):
                         whiteEvaluation = whiteEvaluation - 20
                         hangingPiece = False
             elif b.get(x,y) == Chess.wKnight:
-                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE") and hangingPiece):
-                    whiteEvaluation = whiteEvaluation - 50
-                    hangingPiece = False
                 whiteEvaluation = whiteEvaluation + 300
-                if x == 5:
-                    whiteEvaluation = whiteEvaluation + 5
-                if (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
+                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE") and hangingPiece):
+                    whiteEvaluation = whiteEvaluation - 150
+                    hangingPiece = False
+                elif (turn == "BLACK" and b.get(x - 1,y + 1) == Chess.bPawn):
                     whiteEvaluation = whiteEvaluation - 20
                 elif (turn == "BLACK" and b.get(x - 1,y - 1) == Chess.bPawn):
                         whiteEvaluation = whiteEvaluation - 20
-            elif b.get(x,y) == Chess.wPawn:
-                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE") and hangingPiece):
-                    whiteEvaluation = whiteEvaluation - 20
-                    hangingPiece = False
-                whiteEvaluation = whiteEvaluation + 100 + (8 - x) * 5
-                if x < 5:
+                if x == 5:
                     whiteEvaluation = whiteEvaluation + 5
-                if whitePawnIndex == y:
+            elif b.get(x,y) == Chess.wPawn:
+                whiteEvaluation = whiteEvaluation + 100 + (8 - x) * 5
+                if (turn == "BLACK" and isHanging(b,x,y,blackLegalMoves, "WHITE") and hangingPiece):
+                    whiteEvaluation = whiteEvaluation - 50
+                    hangingPiece = False
+                elif x < 5:
+                    whiteEvaluation = whiteEvaluation + 5
+                elif whitePawnIndex == y:
                     whiteEvaluation = whiteEvaluation - 2
                 whitePawnIndex = y
             elif b.get(x,y) == Chess.wKing:
@@ -122,54 +127,54 @@ def staticEvaluationFunction(b, turn):
                 if y < 4 or y > 7:
                     whiteEvaluation = whiteEvaluation + 2
             elif b.get(x,y) == Chess.bQueen:
-                if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK")and hangingPiece):
-                   blackEvaluation = blackEvaluation - 100
-                   hangingPiece = False
                 blackEvaluation = blackEvaluation + 900
-                if (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
+                if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK")and hangingPiece):
+                   blackEvaluation = blackEvaluation - 450
+                   hangingPiece = False
+                elif (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
                     blackEvaluation = blackEvaluation - 40
                     hangingPiece = False
                 elif (b.get(x + 1,y - 1) == Chess.wPawn):
                     blackEvaluation = blackEvaluation - 40
                     hangingPiece = False
             elif b.get(x,y) == Chess.bRook:
+                blackEvaluation = blackEvaluation + 250
                 if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK") and hangingPiece):
-                   blackEvaluation = blackEvaluation - 75
+                   blackEvaluation = blackEvaluation - 470
                    hangingPiece = False
-                blackEvaluation = blackEvaluation + 500
-                if (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
+                elif (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
                     blackEvaluation = blackEvaluation - 30
                     hangingPiece = False
                 elif (turn == "WHITE" and b.get(x + 1,y - 1) == Chess.wPawn):
                     blackEvaluation = blackEvaluation - 30
                     hangingPiece = False
             elif b.get(x,y) == Chess.bBishop:
-                if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK") and hangingPiece):
-                   blackEvaluation = blackEvaluation - 50
-                   hangingPiece = False
                 blackEvaluation = blackEvaluation + 310
-                if (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
+                if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK") and hangingPiece):
+                    blackEvaluation = blackEvaluation - 155
+                    hangingPiece = False
+                elif (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
                     blackEvaluation = blackEvaluation - 20
                     hangingPiece = False
                 elif (turn == "WHITE" and b.get(x + 1,y - 1) == Chess.wPawn):
                     blackEvaluation = blackEvaluation - 20
                     hangingPiece = False
             elif b.get(x,y) == Chess.bKnight:
+                blackEvaluation b f= blackEvaluation + 300
                 if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK") and hangingPiece):
-                   blackEvaluation = blackEvaluation - 50
+                   blackEvaluation = blackEvaluation - 150
                    hangingPiece = False
-                blackEvaluation = blackEvaluation + 300
-                if x == 5:
-                    blackEvaluation = blackEvaluation + 5
-                if (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
+                elif (turn == "WHITE" and b.get(x + 1,y + 1) == Chess.wPawn):
                     blackEvaluation = blackEvaluation - 20
                 elif (turn == "WHITE" and b.get(x + 1,y - 1) == Chess.wPawn):
                         blackEvaluation = blackEvaluation - 20
+                if x == 5:
+                    blackEvaluation = blackEvaluation + 5
             elif b.get(x,y) == Chess.bPawn:
-                if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK") and hangingPiece):
-                   blackEvaluation = blackEvaluation - 20
-                   hangingPiece = False
                 blackEvaluation = blackEvaluation + 100 + (x - 3) * 5
+                if (turn == "WHITE" and isHanging(b,x,y,whiteLegalMoves, "BLACK") and hangingPiece):
+                   blackEvaluation = blackEvaluation - 50
+                   hangingPiece = False
                 if x > 6:
                     blackEvaluation = blackEvaluation + 5
                 if blackPawnIndex == y:
@@ -230,7 +235,7 @@ def staticEvaluationFunction(b, turn):
                 if b.get(x,y) == Chess.wPawn:
                     whiteEvaluation = whiteEvaluation + 1
                 if b.get(x,y) == Chess.bPawn:
-                    blackEvaluation = blackEvaluation + 1            
+                    blackEvaluation = blackEvaluation + 1          
     return blackEvaluation - whiteEvaluation
 #Method that will return the best moves that the engine can find. Will search varying depths depending on the difficulty level that is passed as a paramter. 
 def getBestMove(b, difficulty):
